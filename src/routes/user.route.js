@@ -20,6 +20,7 @@ const {
   userLogout,
   getAllUser,
   addImages,
+  getImages,
 } = require("../controllers/user.controller");
 
 // const {  } = require("../controllers/image.controller");
@@ -42,5 +43,7 @@ router.get("/getAllUser", verifyToken, getAllUser);
 
 // here image add controller
 router.post("/addImages", verifyToken, addImages);
+
+router.get("/getImages", verifyToken, getImages);
 
 module.exports = router;

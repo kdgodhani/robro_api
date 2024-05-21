@@ -5,7 +5,7 @@ const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY;
 // let userMaping = require("../constants/role.mapping");
 const moduleList = require("../models/modulelist");
 const user = require("../models/user");
-const images = require("../models/image");
+const userImage = require("../models/userimage");
 
 const bcrypt = require("bcryptjs");
 // let { encryptData, decryptData } = require("../utils/encrypt");
@@ -247,19 +247,8 @@ const addImages = async (req, res, next) => {
     const { imageData, description } = req.body;
     let { role: userRole, id } = req.user;
 
-    console.log(req.user, " req.user");
-
-    console.log(req.body, "req.body");
-    // if (role == "Admin") {
-    //   return res.status(400).json({
-    //     success: false,
-    //     message: "Admin Role not allowed",
-    //     data: [],
-    //   });
-    // }
-
     // add images
-    let addImages = await images.create({
+    let addImages = await userImage.create({
       user_id: id,
       image_data: imageData,
       description: description,
@@ -277,6 +266,34 @@ const addImages = async (req, res, next) => {
   }
 };
 
+const getImages = async (req, res, next) => {
+  try {
+    let { role: userRole, id } = req.user;
+
+    if (userRole && userRole == "Admin") {
+      const getAllImages = await userImage.find();
+
+      // Return success response with modules data
+      return res.status(200).json({
+        success: true,
+        data: getAllImages,
+      });
+    }
+
+    let getUser = await userImage.find({ user_id: id });
+
+    // Return success response with created user data
+    return res.status(200).json({
+      success: true,
+      // message: "User Image Data ",
+      data: getUser,
+    });
+  } catch (error) {
+    console.log(error, "image.controller -> getImages");
+    next(error);
+  }
+};
+
 module.exports = {
   userRegister,
   userLogin,
@@ -285,4 +302,5 @@ module.exports = {
   createModule,
   getAllModule,
   addImages,
+  getImages,
 };

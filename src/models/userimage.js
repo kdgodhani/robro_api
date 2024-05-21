@@ -1,12 +1,12 @@
 "use strict";
 const { Types, Schema, model } = require("mongoose");
-// const moment = require("moment");
 
 const imageSchema = new Schema(
   {
     user_id: {
-      type: Types.ObjectId,
-      ref: "User",
+      //   type: Types.ObjectId,
+      type: String,
+      //   ref: "User",
       //   required: true,
     },
     image_data: {
@@ -22,4 +22,4 @@ const imageSchema = new Schema(
   }
 );
 
-module.exports = model("image", imageSchema);
+module.exports = model("userImage", imageSchema);
