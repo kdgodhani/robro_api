@@ -10,7 +10,6 @@ const bcrypt = require("bcryptjs");
 const userRegister = async (req, res, next) => {
   try {
     let { firstName, email, lastName, password, role } = req.body;
-
     // Mannually entry in mongodb
 
     // first_name : "admin"
@@ -19,7 +18,7 @@ const userRegister = async (req, res, next) => {
     // password : "$2a$10$eL9Tbhw2YJ3sOoEKLvcYC.aalfT/NKmeiBnuvHVsPhg7lPHmjU.ZK"  // Admin@123
     // role:"Admin"
 
-    if (!req.user || req.user.userRole) {
+    if (!req.user || !req.user.role) {
       return res.status(403).json({
         success: false,
         message: "Admin Use Role Not Found !!",
@@ -27,7 +26,7 @@ const userRegister = async (req, res, next) => {
       });
     }
 
-    let { userRole } = req.user;
+    let { role: userRole } = req.user;
 
     // Check if the user making the request is an Admin
     if (!userRole || (userRole && userRole !== "Admin")) {
@@ -44,6 +43,14 @@ const userRegister = async (req, res, next) => {
       return res.status(400).json({
         success: false,
         message: "User is already registered",
+        data: [],
+      });
+    }
+
+    if (role == "Admin") {
+      return res.status(400).json({
+        success: false,
+        message: "Admin Role not allowed",
         data: [],
       });
     }

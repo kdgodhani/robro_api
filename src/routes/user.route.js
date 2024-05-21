@@ -25,7 +25,7 @@ const {
 // Admin Create in DB manually
 router.post(
   "/register",
-  // verifyToken,
+  verifyToken,
   validateBody(createUserSchema),
   userRegister
 );
