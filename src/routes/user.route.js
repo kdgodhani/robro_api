@@ -18,11 +18,11 @@ const {
   userRegister,
   userLogin,
   userLogout,
-  userResetPassword,
 } = require("../controllers/user.controller");
 
-// Here Use of VerifyToken Middleware is only Admin can create User in Dashboard
-// Admin Create in DB manually
+const moduleList = require("../routes/modulelist.route");
+router.use("/admin", moduleList);
+
 router.post(
   "/register",
   verifyToken,
@@ -32,9 +32,9 @@ router.post(
 
 router.post("/login", validateBody(createUserSchema), userLogin);
 
-router.post("/resetPassword", verifyToken, userResetPassword);
-
 router.post("/logout", userLogout);
+
+// router.post("/resetPassword", verifyToken, userResetPassword);
 
 // router.post("/update/permission", verifyToken, userUpdatePermission);
 

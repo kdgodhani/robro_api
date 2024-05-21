@@ -34,6 +34,10 @@ const userLogoutSchema = Joi.object().keys({
   id: Joi.number().required(),
 });
 
+const createModuleSchema = Joi.object().keys({
+  id: Joi.number().required(),
+});
+
 // const insertUpdateModuleSchema = Joi.object().keys({
 //   id: Joi.number().required(),
 //   moduleName: Joi.string().optional(),
@@ -73,6 +77,7 @@ module.exports = {
   createUserSchema,
   userLoginSchema,
   userLogoutSchema,
+  createModuleSchema,
   // insertUpdateModuleSchema,
   // insertUpdatePermissionSchema,
   // insertUpdateRoleSettingSchema,

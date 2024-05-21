@@ -3,7 +3,7 @@ const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_TOKEN;
 const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY;
 let userMaping = require("../constants/role.mapping");
-const user = require("../models/user");
+const moduleList = require("../models/modulelist");
 const bcrypt = require("bcryptjs");
 // let { encryptData, decryptData } = require("../utils/encrypt");
 
@@ -200,102 +200,6 @@ const userLogin = async (req, res, next) => {
   }
 };
 
-const userResetPassword = async (req, res, next) => {
-  try {
-    // Get user input
-    let { password } = req.body;
-
-    let { userName: loginUser, id: loginUserId } = req.user;
-
-    let pool = await poolPromise;
-    let userExist = await pool
-      .request()
-      .input("userName", sql.NVarChar, loginUser)
-      .execute("usp_checkRegisteredUser");
-
-    if (userExist.recordset[0] && userExist.recordset[0].result == 0) {
-      return res.send({
-        success: false,
-        message: "User detail not found !!",
-      });
-    }
-
-    let encryptNewPassword = await encryptData(password);
-
-    // Create user in our database
-    let updateUser = await pool
-      .request()
-      .input("id", sql.Int, loginUserId)
-      .input("password", sql.NVarChar, encryptNewPassword)
-      .execute("usp_resetPassword");
-
-    let userData = updateUser.recordset;
-
-    if (userData && userData[0] && userData[0].ErrorNumber) {
-      return res.send({
-        success: false,
-        message: "user Password not updated sucessfully",
-      });
-    }
-
-    return res.send({
-      success: true,
-      data: userData,
-    });
-  } catch (error) {
-    console.log(error, "user.controller -> userResetPassword");
-    next(error);
-  }
-};
-
-const userForgotPassword = async (req, res, next) => {
-  try {
-    // Get user input
-    let { password } = req.body;
-
-    let { userName: loginUser, id: loginUserId } = req.user;
-
-    let pool = await poolPromise;
-    let userExist = await pool
-      .request()
-      .input("userName", sql.NVarChar, loginUser)
-      .execute("usp_checkRegisteredUser");
-
-    if (userExist.recordset[0] && userExist.recordset[0].result == 0) {
-      return res.send({
-        success: false,
-        message: "User detail not found !!",
-      });
-    }
-
-    let encryptNewPassword = await encryptData(password);
-
-    // Create user in our database
-    let updateUser = await pool
-      .request()
-      .input("id", sql.Int, loginUserId)
-      .input("password", sql.NVarChar, encryptNewPassword)
-      .execute("usp_resetPassword");
-
-    let userData = updateUser.recordset;
-
-    if (userData && userData[0] && userData[0].ErrorNumber) {
-      return res.send({
-        success: false,
-        message: "user Password not updated sucessfully",
-      });
-    }
-
-    return res.send({
-      success: true,
-      data: userData,
-    });
-  } catch (error) {
-    console.log(error, "user.controller -> userResetPassword");
-    next(error);
-  }
-};
-
 const userLogout = async (req, res, next) => {
   try {
     throw { success: false, message: "just tyr ioror" };
@@ -305,9 +209,59 @@ const userLogout = async (req, res, next) => {
   }
 };
 
+// Here create module list api
+const createModule = async (req, res, next) => {
+  try {
+    const { moduleName, modulePath, componentName } = req.body;
+
+    let { role: userRole } = req.user;
+
+    // We can also define Role condition IN route But Currently we are using here
+    // Check if the user making the request is an Admin
+    if (!userRole || (userRole && userRole !== "Admin")) {
+      return res.status(403).json({
+        success: false,
+        message: "Only Admin Can Create Module !!",
+        data: [],
+      });
+    }
+    const newModule = await moduleList.create({
+      module_name: moduleName,
+      module_path: modulePath,
+      component_name: componentName,
+    });
+
+    // Return success response
+    return res.status(201).json({
+      success: true,
+      message: "Module created successfully",
+      data: newModule,
+    });
+  } catch (error) {
+    console.log(error, "user.controller -> createModule");
+    next(error);
+  }
+};
+
+const getAllModule = async (req, res, next) => {
+  try {
+    const modules = await moduleList.find();
+
+    // Return success response with modules data
+    return res.status(200).json({
+      success: true,
+      data: modules,
+    });
+  } catch (error) {
+    console.log(error, "user.controller -> getAllModule");
+    next(error);
+  }
+};
+
 module.exports = {
   userRegister,
   userLogin,
-  userResetPassword,
   userLogout,
+  createModule,
+  getAllModule,
 };
