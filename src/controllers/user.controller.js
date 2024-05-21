@@ -129,7 +129,7 @@ const userLogin = async (req, res, next) => {
     return res.status(200).json({
       success: true,
       message: "Logged in successfully",
-      finalData,
+      data: finalData,
     });
 
     // // Get user input
