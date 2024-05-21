@@ -2,9 +2,11 @@
 const jwt = require("jsonwebtoken");
 const JWT_SECRET = process.env.JWT_TOKEN;
 const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY;
-let userMaping = require("../constants/role.mapping");
+// let userMaping = require("../constants/role.mapping");
 const moduleList = require("../models/modulelist");
 const user = require("../models/user");
+const images = require("../models/image");
+
 const bcrypt = require("bcryptjs");
 // let { encryptData, decryptData } = require("../utils/encrypt");
 
@@ -149,69 +151,6 @@ const userLogin = async (req, res, next) => {
       message: "Logged in successfully",
       data: finalData,
     });
-
-    // // Get user input
-    // let { email, password } = req.body
-
-    // let userArr = [{
-    //   Id:1,
-    //   Email:"admin@mail.com",
-    //   Role:"Admin"
-    // },
-    // {
-    //   Id:2,
-    //   Email:"supervisor@mail.com",
-    //   Role:"Supervisor"
-    // },
-    // {
-    //   Id:3,
-    //   Email:"worker@mail.com",
-    //   Role:"Worker"
-    // },]
-
-    // // let getUser = userExist.recordset[0];
-    // let getUser = findUserByEmail(userArr,email);
-
-    // if(!getUser){
-    //       return res.send({
-    //     success: false,
-    //     message: "\User Not Found in Db...",
-    //   });
-    // }
-
-    // let finalData = [];
-
-    // let userInfo = {
-    //   userId: getUser.Id,
-    //   email: getUser.Email,
-    //   userRole: getUser.Role,
-    // };
-
-    // // let userInfoStringfy = JSON.stringify(userInfo);
-
-    // let token = jwt.sign(userInfo, TOKEN_KEY, {
-    //   expiresIn: TOKEN_EXPIRY,
-    // });
-
-    // let userRoleMapObj = {};
-
-    // let objRole = [{ role_name: getUser.Role }];
-    // let objModule = userMaping[getUser.Role];
-
-    // userRoleMapObj.obj_role = objRole;
-    // userRoleMapObj.obj_module = objModule ? objModule : [];
-
-    // finalData.push({
-    //   id: getUser.Id,
-    //   email: getUser.Email,
-    //   userToken: token,
-    //   userRoleMap: userRoleMapObj,
-    // });
-
-    // return res.send({
-    //   success: true,
-    //   data: finalData,
-    // });
   } catch (error) {
     console.log(error, "user.controller -> userLogin");
     next(error);
@@ -223,6 +162,31 @@ const userLogout = async (req, res, next) => {
     throw { success: false, message: "just tyr ioror" };
   } catch (error) {
     console.log(error, "user.controller -> userLogout");
+    next(error);
+  }
+};
+
+const getAllUser = async (req, res, next) => {
+  try {
+    let { role: userRole } = req.user;
+
+    // Check if the user making the request is an Admin
+    if (!userRole || (userRole && userRole !== "Admin")) {
+      return res.status(403).json({
+        success: false,
+        message: "Only Admin Can Get All User !!",
+        data: [],
+      });
+    }
+    const users = await user.find();
+
+    // Return success response with modules data
+    return res.status(200).json({
+      success: true,
+      data: users,
+    });
+  } catch (error) {
+    console.log(error, "user.controller -> getAllUser");
     next(error);
   }
 };
@@ -276,10 +240,49 @@ const getAllModule = async (req, res, next) => {
   }
 };
 
+// images
+
+const addImages = async (req, res, next) => {
+  try {
+    const { imageData, description } = req.body;
+    let { role: userRole, id } = req.user;
+
+    console.log(req.user, " req.user");
+
+    console.log(req.body, "req.body");
+    // if (role == "Admin") {
+    //   return res.status(400).json({
+    //     success: false,
+    //     message: "Admin Role not allowed",
+    //     data: [],
+    //   });
+    // }
+
+    // add images
+    let addImages = await images.create({
+      user_id: id,
+      image_data: imageData,
+      description: description,
+    });
+
+    // Return success response with created user data
+    return res.status(201).json({
+      success: true,
+      message: "Data add successfully",
+      data: addImages,
+    });
+  } catch (error) {
+    console.log(error, "image.controller -> addImages");
+    next(error);
+  }
+};
+
 module.exports = {
   userRegister,
   userLogin,
   userLogout,
+  getAllUser,
   createModule,
   getAllModule,
+  addImages,
 };
