@@ -23,6 +23,9 @@ const createUserSchema = Joi.object().keys({
   role: Joi.string()
     // .when("id", { is: 0, then: Joi.string().required() })
     .optional(),
+  moduleList: Joi.array()
+    // .when("id", { is: 0, then: Joi.string().required() })
+    .optional(),
 });
 
 const userLoginSchema = Joi.object().keys({

@@ -4,12 +4,13 @@ const JWT_SECRET = process.env.JWT_TOKEN;
 const TOKEN_EXPIRY = process.env.TOKEN_EXPIRY;
 let userMaping = require("../constants/role.mapping");
 const moduleList = require("../models/modulelist");
+const user = require("../models/user");
 const bcrypt = require("bcryptjs");
 // let { encryptData, decryptData } = require("../utils/encrypt");
 
 const userRegister = async (req, res, next) => {
   try {
-    let { firstName, email, lastName, password, role } = req.body;
+    let { firstName, email, lastName, password, role, moduleList } = req.body;
     // Mannually entry in mongodb
 
     // first_name : "admin"
@@ -65,6 +66,7 @@ const userRegister = async (req, res, next) => {
       email: email,
       password: encryptPassword,
       role: role,
+      module_list: moduleList,
     });
 
     // Return success response with created user data
@@ -111,12 +113,28 @@ const userLogin = async (req, res, next) => {
     );
 
     let userRoleMapObj = {};
-
     let objRole = [{ role_name: checkUser.role }];
-    let objModule = userMaping[checkUser.role];
-
     userRoleMapObj.obj_role = objRole;
-    userRoleMapObj.obj_module = objModule ? objModule : [];
+    // let objModule = userMaping[checkUser.role];
+
+    userRoleMapObj.obj_module = [];
+
+    if (checkUser && checkUser["module_list"].length > 0) {
+      const moduleDetailsPromises = checkUser.module_list.map(
+        async (moduleId) => {
+          const moduleDetail = await moduleList
+            .findById(moduleId)
+            .lean()
+            .exec();
+          return moduleDetail;
+        }
+      );
+
+      const modules = await Promise.all(moduleDetailsPromises);
+      // remove null value
+      const filteredModules = modules.filter((module) => module !== null);
+      userRoleMapObj.obj_module = filteredModules ? filteredModules : [];
+    }
 
     finalData.push({
       id: checkUser._id,

@@ -27,6 +27,9 @@ const userSchema = new Schema(
       type: String,
       enum: ["Worker", "Supervisor"],
     },
+    module_list: {
+      type: Array,
+    },
   },
   {
     timestamps: { createdAt: "created_at", updatedAt: "updated_at" },
