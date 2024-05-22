@@ -3,7 +3,7 @@ const Joi = require("joi");
 const pattern = /^.{8,20}$/;
 
 const createUserSchema = Joi.object().keys({
-  // id: Joi.number().optional(),
+  id: Joi.number().optional(),
   email: Joi.string().required(),
   // password: Joi.string()
   //   .when("id", { is: 0, then: Joi.string().required() })
