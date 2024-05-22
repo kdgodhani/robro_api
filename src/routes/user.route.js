@@ -17,6 +17,7 @@ const {
 const {
   userRegister,
   userLogin,
+  userRemove,
   userLogout,
   getAllUser,
   addImages,
@@ -36,6 +37,13 @@ router.post(
 );
 
 router.post("/login", validateBody(createUserSchema), userLogin);
+
+router.post(
+  "/remove",
+  verifyToken,
+  //  validateBody(createUserSchema),
+  userRemove
+);
 
 router.post("/logout", verifyToken, userLogout);
 
