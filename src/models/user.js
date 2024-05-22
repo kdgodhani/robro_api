@@ -20,6 +20,9 @@ const userSchema = new Schema(
       type: String,
       unique: true,
     },
+    is_active: {
+      type: Boolean,
+    },
     token: {
       type: String,
     },

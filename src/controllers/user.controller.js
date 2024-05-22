@@ -12,7 +12,15 @@ const bcrypt = require("bcryptjs");
 
 const userRegister = async (req, res, next) => {
   try {
-    let { firstName, email, lastName, password, role, moduleList } = req.body;
+    let {
+      firstName,
+      email,
+      lastName,
+      password,
+      role,
+      moduleList,
+      isActive = true,
+    } = req.body;
     // Mannually entry in mongodb
 
     // first_name : "admin"
@@ -69,6 +77,7 @@ const userRegister = async (req, res, next) => {
       password: encryptPassword,
       role: role,
       module_list: moduleList,
+      is_active: isActive,
     });
 
     // Return success response with created user data
@@ -153,6 +162,50 @@ const userLogin = async (req, res, next) => {
     });
   } catch (error) {
     console.log(error, "user.controller -> userLogin");
+    next(error);
+  }
+};
+
+const userRemove = async (req, res, next) => {
+  try {
+    let { userId, isActive } = req.body;
+
+    // console.log(req.user, " req.user");
+
+    let { role: userRole } = req.user;
+
+    // Check if the user making the request is an Admin
+    if (!userRole || (userRole && userRole !== "Admin")) {
+      return res.status(403).json({
+        success: false,
+        message: "Only Admin Can Remove User !!",
+        data: [],
+      });
+    }
+
+    // Check if the user already exists
+    let updatedUser = await user.findByIdAndUpdate(
+      { _id: userId },
+      { is_active: isActive },
+      { new: true }
+    );
+
+    if (!updatedUser) {
+      return res.status(400).json({
+        success: false,
+        message: "User is not remove !! ",
+        data: [],
+      });
+    }
+
+    // Return success response with created user data
+    return res.status(201).json({
+      success: true,
+      message: "User created successfully",
+      data: updatedUser,
+    });
+  } catch (error) {
+    console.log(error, "user.controller -> userRegister");
     next(error);
   }
 };
@@ -297,6 +350,7 @@ const getImages = async (req, res, next) => {
 module.exports = {
   userRegister,
   userLogin,
+  userRemove,
   userLogout,
   getAllUser,
   createModule,
